@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do Alarm App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: black;
+            background: #000000;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 50px;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            backdrop-filter: blur(15px);
+        }
+        header {
+            background-color: #000000;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-size: 0.5rem;
+        }
+        .task-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+           
+            border-radius: 15px;
+            padding: 20px;
+                   }
+        .task-input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 10px;
+        }
+        input[type="text"], input[type="time"], input[type="date"] {
+            width: 100%;
+            padding: 12px;
+            border: 4px solid #ffffff;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        button {
+            background-color: #0078d4;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #005bb5;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.2);
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            backdrop-filter: blur(15px);
+        }
+        table, th, td {
+            border: 1px solid rgba(0, 0, 0, 0.2);
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #000000;
+            color: white;
+        }
+        .remaining-time {
+            font-weight: bold;
+            color: #3d2908;
+        }
+   .video-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background-size: cover;
+      background-position: center;
+      transition: background-image 1s ease-in-out;
+    }
+
+
+
+
+
+        .notification {
+            background-color: #ffcc00;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 250px;
+            text-align: center;
+        }
+        .notification button {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .notification button:hover {
+            background-color: darkred;
+        }
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+    max-width: 90%;
+  }
+
+  .task-input-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  input[type="text"],
+  input[type="time"],
+  input[type="date"] {
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+  }
+
+  table,
+  th,
+  td {
+    font-size: 0.9rem;
+    word-wrap: break-word;
+  }
+
+  header {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+  }
+
+  .notification {
+    width: 90%;
+    font-size: 0.9rem;
+  }
+}
+
+    </style>
+</head>
+<body>
+    <div class="video-background" id="bg-container">
+      
+    </div>    
+
+    <div class="container">
+        <header>
+            <h1>Time Is Money Don't Waste Money</h1>
+        </header>
+
+        <div class="task-input">
+            <div class="task-input-row">
+                <input class="data" type="text" id="task" placeholder="Enter your task">
+                <input class="data" type="date" id="alarm-date">
+                <input class="data" type="time" id="alarm-time">
+            </div>
+            <button onclick="addTask()">Add Task</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Remaining Time</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="task-list">
+            </tbody>
+        </table>
+    </div>
+
+    <audio id="alarm-sound" src="C:\Users\prash\Downloads\180918-alarm-bell-chime-ring-outside-downtown-toronto-26080.mp3" preload="auto"></audio>
+
+    <script>
+
+  const bgContainer = document.getElementById('bg-container');
+
+    const images = [
+      "https://wallpaperaccess.com/full/812857.jpg",
+      "https://wallpaperaccess.com/full/4523587.jpg",
+      "https://wallpaperaccess.com/full/795952.jpg",
+      "https://wallpaperaccess.com/full/1738651.jpg",
+      "https://wallpaperaccess.com/full/812847.jpg",
+      "https://wallpaperaccess.com/full/4523600.jpg",
+      "https://wallpaperaccess.com/full/2112713.jpg",
+      "https://wallpaperaccess.com/full/4523633.jpg",
+"https://wallpaperaccess.com/full/4523667.jpg",
+"https://wallpaperaccess.com/full/4523682.jpg",
+"https://wallpaperaccess.com/full/4523702.jpg",
+"https://wallpaperaccess.com/full/851957.jpg",
+"https://wallpaperaccess.com/full/4523728.jpg",
+"https://wallpaperaccess.com/full/4523761.jpg",
+"https://wallpaperaccess.com/full/4523864.jpg",
+"https://wallpaperaccess.com/full/2024805.jpg",
+"https://wallpaperaccess.com/full/5511719.jpg",
+"https://wallpaperaccess.com/full/4995340.jpg"
+    ];
+
+    
+    bgContainer.style.backgroundImage = `url(${images[0]})`;
+
+    
+    document.body.addEventListener("click", () => {
+      const index = Math.floor(Math.random() * images.length);
+      bgContainer.style.backgroundImage = `url(${images[index]})`;
+    });
+
+        const activeAlarms = [];
+
+        function calculateRemainingTime(date, time) {
+            const taskDateTime = new Date(`${date}T${time}`);
+            const now = new Date();
+            const difference = taskDateTime - now;
+
+            if (difference <= 0) return "Expired";
+
+            const hours = Math.floor(difference / (1000 * 60 * 60));
+            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+            const milliseconds = difference % 1000;
+
+            return `${hours}h ${minutes}m ${seconds}s ${milliseconds}ms`;
+        }
+
+        function updateRemainingTimes() {
+            const rows = document.querySelectorAll("#task-list tr");
+            rows.forEach(row => {
+                const date = row.dataset.date;
+                const time = row.dataset.time;
+                const remainingCell = row.querySelector(".remaining-time");
+                remainingCell.textContent = calculateRemainingTime(date, time);
+            });
+        }
+
+        function saveToLocalStorage(tasks) {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function loadFromLocalStorage() {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            return tasks;
+        }
+
+        function addTask() {
+            const taskInput = document.getElementById('task');
+            const dateInput = document.getElementById('alarm-date');
+            const timeInput = document.getElementById('alarm-time');
+            const taskList = document.getElementById('task-list');
+            const alarmSound = document.getElementById('alarm-sound');
+
+            const task = taskInput.value.trim();
+            const date = dateInput.value;
+            const time = timeInput.value;
+
+            if (task === '' || date === '' || time === '') {
+                alert('Please enter a task, date, and time.');
+                return;
+            }
+
+            const tasks = loadFromLocalStorage();
+
+            const newTask = {
+                task,
+                date,
+                time,
+                alarmTime: new Date(`${date}T${time}`).getTime()
+            };
+
+            tasks.push(newTask);
+            saveToLocalStorage(tasks);
+
+            const row = document.createElement('tr');
+            row.dataset.date = date;
+            row.dataset.time = time;
+            row.dataset.task = task;
+            row.innerHTML = `
+                <td>${task}</td>
+                <td>${date}</td>
+                <td>${time}</td>
+                <td class="remaining-time">${calculateRemainingTime(date, time)}</td>
+                <td><button onclick="removeTask(this)">Delete</button></td>
+            `;
+            taskList.appendChild(row);
+
+            const alarmDateTime = new Date(`${date}T${time}`);
+            const now = new Date();
+            const timeUntilAlarm = alarmDateTime - now;
+
+            if (timeUntilAlarm > 0) {
+                const alarmTimeout = setTimeout(() => {
+                    alarmSound.play();
+                    showNotification(task, date, time);
+                }, timeUntilAlarm);
+
+                activeAlarms.push({ timeoutId: alarmTimeout, task: newTask });
+            }
+
+            taskInput.value = '';
+            dateInput.value = '';
+            timeInput.value = '';
+
+            updateRemainingTimes();
+        }
+
+        function showNotification(task, date, time) {
+            const notificationContainer = document.createElement('div');
+            notificationContainer.classList.add('notification');
+
+            notificationContainer.innerHTML = `
+                <p>Task: ${task}</p>
+                <p>Time: ${date} at ${time}</p>
+                <button onclick="deleteNotification(this)">Delete</button>
+            `;
+
+            document.body.appendChild(notificationContainer);
+
+            setTimeout(() => {
+                notificationContainer.style.display = 'none';
+            }, 5000);
+        }
+
+        function deleteNotification(button) {
+            const notification = button.parentElement;
+            notification.remove();
+
+            const taskName = notification.querySelector('p').innerText.split(': ')[1];
+            stopAlarm(taskName);
+
+            const tasks = loadFromLocalStorage();
+            const taskIndex = tasks.findIndex(task => task.task === taskName);
+
+            if (taskIndex > -1) {
+                tasks.splice(taskIndex, 1);
+                saveToLocalStorage(tasks);
+
+                const taskList = document.getElementById('task-list');
+                const row = document.querySelector(`tr[data-task="${taskName}"]`);
+                if (row) {
+                    taskList.removeChild(row);
+                }
+            }
+        }
+
+        function stopAlarm(taskName) {
+            const alarmToStop = activeAlarms.find(alarm => alarm.task.task === taskName);
+            if (alarmToStop) {
+                clearTimeout(alarmToStop.timeoutId);
+                activeAlarms.splice(activeAlarms.indexOf(alarmToStop), 1);
+            }
+
+            const alarmSound = document.getElementById('alarm-sound');
+            alarmSound.pause();
+            alarmSound.currentTime = 0;
+        }
+
+        function removeTask(button) {
+            const row = button.parentElement.parentElement;
+            const taskList = document.getElementById('task-list');
+            const tasks = loadFromLocalStorage();
+
+            const taskIndex = Array.from(taskList.rows).indexOf(row);
+            tasks.splice(taskIndex, 1);
+
+            const alarmDate = row.dataset.date;
+            const alarmTime = row.dataset.time;
+
+            const alarmToStop = activeAlarms.find(alarm => alarm.task.date === alarmDate && alarm.task.time === alarmTime);
+            if (alarmToStop) {
+                clearTimeout(alarmToStop.timeoutId);
+                activeAlarms.splice(activeAlarms.indexOf(alarmToStop), 1);
+            }
+
+            saveToLocalStorage(tasks);
+            row.remove();
+            updateRemainingTimes();
+        }
+
+        function loadTasks() {
+            const tasks = loadFromLocalStorage();
+            const taskList = document.getElementById('task-list');
+            const alarmSound = document.getElementById('alarm-sound');
+
+            tasks.forEach(task => {
+                const row = document.createElement('tr');
+                row.dataset.date = task.date;
+                row.dataset.time = task.time;
+                row.dataset.task = task.task;
+                row.innerHTML = `
+                    <td>${task.task}</td>
+                    <td>${task.date}</td>
+                    <td>${task.time}</td>
+                    <td class="remaining-time">${calculateRemainingTime(task.date, task.time)}</td>
+                    <td><button onclick="removeTask(this)">Delete</button></td>
+                `;
+                taskList.appendChild(row);
+
+                const alarmDateTime = new Date(task.alarmTime);
+                const now = new Date();
+                const timeUntilAlarm = alarmDateTime - now;
+
+                if (timeUntilAlarm > 0) {
+                    const alarmTimeout = setTimeout(() => {
+                        alarmSound.play();
+                        showNotification(task.task, task.date, task.time);
+                    }, timeUntilAlarm);
+
+                    activeAlarms.push({ timeoutId: alarmTimeout, task: task });
+                }
+            });
+
+            updateRemainingTimes();
+        }
+
+        window.onload = loadTasks;
+        setInterval(updateRemainingTimes, 100);
+    </script>
+
+
+</body></html>
